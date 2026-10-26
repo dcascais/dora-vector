@@ -1,0 +1,38 @@
+# Build directories
+/build/
+/build-*/
+/cmake-build-*/
+
+# CMake
+/.clangd
+/compile_commands.json
+/CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+
+# Compiled binaries and libraries
+*.o
+*.obj
+*.d
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.dSYM/
+
+# Tooling and dot-directories
+.*/
+!.github/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python test tooling
+__pycache__/
+*.egg-info/

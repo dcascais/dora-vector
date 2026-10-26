@@ -1,0 +1,36 @@
+BasedOnStyle: LLVM
+Language: C
+
+ColumnLimit: 120
+IndentWidth: 4
+TabWidth: 4
+
+LineEnding: LF
+InsertNewlineAtEOF: true
+KeepEmptyLines:
+  AtStartOfFile: false
+  AtStartOfBlock: false
+SeparateDefinitionBlocks: Always
+
+PointerAlignment: Left
+BreakAfterAttributes: Always
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 1
+IndentGotoLabels: NoIndent
+
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+
+PackParameters:
+  BinPack: OnePerLine
+PackArguments:
+  BinPack: OnePerLine
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: false
+
+BreakAfterOpenBracketBracedList: true
+BreakBeforeCloseBracketBracedList: true

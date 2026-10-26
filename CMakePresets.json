@@ -1,0 +1,246 @@
+{
+  "version": 12,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 4,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "binaryDir": "${sourceDir}/build-release"
+    },
+    {
+      "name": "llvm-debug",
+      "inherits": "default",
+      "description": "Clang Debug build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "Clang"
+      }
+    },
+    {
+      "name": "llvm-release",
+      "inherits": "release",
+      "description": "Clang Release build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "Clang"
+      }
+    },
+    {
+      "name": "appleclang-debug",
+      "inherits": "default",
+      "description": "AppleClang Debug build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "AppleClang"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "appleclang-release",
+      "inherits": "release",
+      "description": "AppleClang Release build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "AppleClang"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "gcc-debug",
+      "inherits": "default",
+      "description": "GNU Debug build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "GNU"
+      }
+    },
+    {
+      "name": "gcc-release",
+      "inherits": "release",
+      "description": "GNU Release build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "DORA_EXPECTED_C_COMPILER_ID": "GNU"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "targets": [
+        "all",
+        "dora_vector_verify_interface_header_sets",
+        "dora_vector_verify_private_header_sets"
+      ]
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
+      "targets": [
+        "all",
+        "dora_vector_verify_interface_header_sets",
+        "dora_vector_verify_private_header_sets"
+      ]
+    },
+    {
+      "name": "llvm-debug",
+      "inherits": "default",
+      "configurePreset": "llvm-debug"
+    },
+    {
+      "name": "llvm-release",
+      "inherits": "default",
+      "configurePreset": "llvm-release"
+    },
+    {
+      "name": "appleclang-debug",
+      "inherits": "default",
+      "configurePreset": "appleclang-debug"
+    },
+    {
+      "name": "appleclang-release",
+      "inherits": "default",
+      "configurePreset": "appleclang-release"
+    },
+    {
+      "name": "gcc-debug",
+      "inherits": "default",
+      "configurePreset": "gcc-debug"
+    },
+    {
+      "name": "gcc-release",
+      "inherits": "default",
+      "configurePreset": "gcc-release"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "default",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "default"
+        },
+        {
+          "type": "build",
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release"
+        },
+        {
+          "type": "build",
+          "name": "release"
+        }
+      ]
+    },
+    {
+      "name": "llvm-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "llvm-debug"
+        },
+        {
+          "type": "build",
+          "name": "llvm-debug"
+        }
+      ]
+    },
+    {
+      "name": "llvm-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "llvm-release"
+        },
+        {
+          "type": "build",
+          "name": "llvm-release"
+        }
+      ]
+    },
+    {
+      "name": "appleclang-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "appleclang-debug"
+        },
+        {
+          "type": "build",
+          "name": "appleclang-debug"
+        }
+      ]
+    },
+    {
+      "name": "appleclang-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "appleclang-release"
+        },
+        {
+          "type": "build",
+          "name": "appleclang-release"
+        }
+      ]
+    },
+    {
+      "name": "gcc-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-debug"
+        },
+        {
+          "type": "build",
+          "name": "gcc-debug"
+        }
+      ]
+    },
+    {
+      "name": "gcc-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-release"
+        },
+        {
+          "type": "build",
+          "name": "gcc-release"
+        }
+      ]
+    }
+  ]
+}

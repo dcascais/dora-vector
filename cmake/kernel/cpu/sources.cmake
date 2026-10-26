@@ -1,0 +1,13 @@
+set(DORA_KERNEL_BACKEND_SOURCES
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/arithmetic.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/boolean.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/bytes.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/cast.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/compare.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/decode.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/generate.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/hash.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/reduce.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/select.c
+    ${PROJECT_SOURCE_DIR}/src/kernel/cpu/validate.c
+)

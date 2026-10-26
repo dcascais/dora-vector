@@ -1,0 +1,31 @@
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-narrowing-conversions,
+  -bugprone-macro-parentheses,
+  cert-err33-c,
+  clang-analyzer-*,
+  portability-*,
+  misc-static-assert,
+  modernize-redundant-void-arg,
+  modernize-use-nullptr,
+  readability-avoid-unconditional-preprocessor-if,
+  readability-braces-around-statements,
+  readability-implicit-bool-conversion,
+  readability-redundant-preprocessor,
+  readability-use-concise-preprocessor-directives
+
+WarningsAsErrors: "*"
+
+CheckOptions:
+  bugprone-unused-return-value.CheckedFunctions: >-
+    ^::(bsearch|ferror|feof|isalnum|isalpha|isblank|iscntrl|isdigit|isgraph|islower|isprint|ispunct|isspace|isupper|iswalnum|iswprint|iswspace|isxdigit|memchr|memcmp|strcmp|strcoll|strncmp|strpbrk|strrchr|strspn|strstr|wcscmp)$;
+    ^::(access|bind|connect|difftime|dlsym|fnmatch|getaddrinfo|getopt|htonl|htons|iconv_open|inet_addr|isascii|isatty|mmap|newlocale|openat|pathconf|pthread_equal|pthread_getspecific|pthread_mutex_trylock|readdir|readlink|recvmsg|regexec|scandir|semget|setjmp|shm_open|shmget|sigismember|strcasecmp|strsignal|ttyname)$;
+    ^::dora_.*$;
+    ^::([^m].*|m([^e].*)?|me([^m].*)?|mem([^cms].*)?|memc([^p].*)?|memcp([^y].*)?|memcpy.+|memm([^o].*)?|memmo([^v].*)?|memmov([^e].*)?|memmove.+|mems([^e].*)?|memse([^t].*)?|memset.+)$
+  bugprone-unused-return-value.CheckedReturnTypes: "^::dora_.*$"
+  bugprone-unused-return-value.AllowCastToVoid: false
+  cert-err33-c.AllowCastToVoid: false
+  "clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling:ReportMode": actionable
+  portability-restrict-system-includes.Includes: "*,-stdbool.h,-stdalign.h,-stdnoreturn.h"
+  readability-implicit-bool-conversion.AllowLogicalOperatorConversion: true
