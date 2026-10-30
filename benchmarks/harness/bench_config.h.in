@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 Daniel Cascais
+// SPDX-License-Identifier: MIT
+
+/// Benchmark build information.
+
+#ifndef DORA_BENCHMARKS_BENCH_CONFIG_H
+#define DORA_BENCHMARKS_BENCH_CONFIG_H
+
+static constexpr char BENCH_BUILD_CONFIG[] = @bench_build_config@;
+static constexpr char BENCH_COMPILER[] = @bench_compiler@;
+static constexpr char BENCH_C_FLAGS[] = @bench_c_flags@;
+static constexpr char BENCH_LIBRARY_OPTIONS[] = @bench_library_options@;
+
+#endif

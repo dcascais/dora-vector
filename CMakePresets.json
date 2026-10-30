@@ -23,6 +23,15 @@
       "binaryDir": "${sourceDir}/build-release"
     },
     {
+      "name": "benchmarks",
+      "inherits": "release",
+      "description": "Release benchmark build; select its clangd database with dora_clangd_select.",
+      "binaryDir": "${sourceDir}/build-benchmarks",
+      "cacheVariables": {
+        "DORA_BUILD_BENCHMARKS": true
+      }
+    },
+    {
       "name": "llvm-debug",
       "inherits": "default",
       "description": "Clang Debug build; select the actual compiler externally through CC, CMAKE_C_COMPILER, or a toolchain file.",
@@ -93,8 +102,7 @@
       "configurePreset": "default",
       "targets": [
         "all",
-        "dora_vector_verify_interface_header_sets",
-        "dora_vector_verify_private_header_sets"
+        "all_verify_header_sets"
       ]
     },
     {
@@ -102,8 +110,15 @@
       "configurePreset": "release",
       "targets": [
         "all",
-        "dora_vector_verify_interface_header_sets",
-        "dora_vector_verify_private_header_sets"
+        "all_verify_header_sets"
+      ]
+    },
+    {
+      "name": "benchmarks",
+      "configurePreset": "benchmarks",
+      "targets": [
+        "all",
+        "all_verify_header_sets"
       ]
     },
     {
@@ -119,12 +134,22 @@
     {
       "name": "appleclang-debug",
       "inherits": "default",
-      "configurePreset": "appleclang-debug"
+      "configurePreset": "appleclang-debug",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
     },
     {
       "name": "appleclang-release",
       "inherits": "default",
-      "configurePreset": "appleclang-release"
+      "configurePreset": "appleclang-release",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
     },
     {
       "name": "gcc-debug",
@@ -165,6 +190,27 @@
       ]
     },
     {
+      "name": "benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "benchmarks"
+        },
+        {
+          "type": "build",
+          "name": "benchmarks"
+        },
+        {
+          "type": "test",
+          "name": "benchmarks-check"
+        },
+        {
+          "type": "test",
+          "name": "benchmarks"
+        }
+      ]
+    },
+    {
       "name": "llvm-debug",
       "steps": [
         {
@@ -241,6 +287,41 @@
           "name": "gcc-release"
         }
       ]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "benchmarks-check",
+      "configurePreset": "benchmarks",
+      "filter": {
+        "include": {
+          "label": "^benchmark$"
+        },
+        "exclude": {
+          "label": "^performance$"
+        }
+      },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "benchmarks",
+      "configurePreset": "benchmarks",
+      "filter": {
+        "include": {
+          "label": "^performance$"
+        }
+      },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
     }
   ]
 }

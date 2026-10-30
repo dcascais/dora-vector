@@ -1,0 +1,12 @@
+CompileFlags:
+  CompilationDatabase: @dora_clangd_binary_directory_yaml@
+---
+If:
+  PathMatch: '.*\.h'
+CompileFlags:
+  Remove: [@dora_translation_unit_warnings_yaml@]
+---
+If:
+  PathMatch: 'include/.*\.h'
+CompileFlags:
+  Remove: [@dora_clangd_public_flags_yaml@]

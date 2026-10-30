@@ -48,12 +48,25 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    status = dora_vector_init_copy_i32(&vector_a, pool, &type, values_a, nullptr, count);
+    status = dora_vector_init_copy_i32(&vector_a,
+                                       pool,
+                                       &type,
+                                       values_a,
+                                       nullptr,
+                                       count);
     if (status == DORA_OK) {
-        status = dora_vector_init_copy_i32(&vector_b, pool, &type, values_b, nullptr, count);
+        status = dora_vector_init_copy_i32(&vector_b,
+                                           pool,
+                                           &type,
+                                           values_b,
+                                           nullptr,
+                                           count);
     }
     if (status == DORA_OK) {
-        status = dora_compute_add(&vector_a, &vector_b, DORA_FAILURE_POLICY_ERROR, &sum);
+        status = dora_compute_add(&vector_a,
+                                  &vector_b,
+                                  DORA_FAILURE_POLICY_ERROR,
+                                  &sum);
     }
 
     dora_vector_release(&sum);
@@ -67,8 +80,17 @@ int main() {
 
 ## Getting started
 
-The presets require CMake 4.4 or newer, Ninja, and a C23 compiler.
-Examples also require clang-tidy.
+### Requirements
+
+- Dora:
+  - CMake 4.4+
+  - Clang, AppleClang, or GCC with C23 support
+- Building Dora as the top-level project:
+  - clang-tidy 23+
+  - Ninja or Make
+- Benchmarks:
+  - Python 3
+
 Select the compiler through `CC`, `CMAKE_C_COMPILER`, or a toolchain file when
 configuring a fresh build directory.
 
@@ -78,11 +100,13 @@ cmake --build --preset release
 cmake --install build-release --prefix /path/to/install
 ```
 
-Examples are opt-in; enable with `-DDORA_BUILD_EXAMPLES=ON`.
+Examples and benchmarks are opt-in:
 
-Building a build directory's `dora_clangd_select` target writes that build's
-generated clangd configuration to the source root's `.clangd`, selecting the
-build's compilation database for clangd.
+- `-DDORA_BUILD_EXAMPLES=ON`
+- `-DDORA_BUILD_BENCHMARKS=ON`
+
+Building a build's `dora_clangd_select` target writes the source root's
+`.clangd`, pointing clangd at that build's compilation database.
 
 In your project's `CMakeLists.txt`:
 
@@ -100,12 +124,16 @@ add_subdirectory(dora-vector)
 target_link_libraries(your_target PRIVATE dora::vector)
 ```
 
+Set `DORA_INSTALL` to `ON` before `add_subdirectory` to install Dora with your
+project.
+
 ## Documentation
 
 - [Public API headers](include/dora/vector/) and [umbrella header](include/dora/vector.h)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Arrow adapter API](include/dora/vector/interop/arrow/arrow.h)
 - [Examples](examples/README.md)
+- [Benchmarks](benchmarks/README.md)
 
 ## Contributing
 

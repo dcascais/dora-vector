@@ -28,15 +28,6 @@ if(DEFINED DORA_EXPECTED_C_COMPILER_ID)
     endif()
 endif()
 
-if(DEFINED DORA_EXPECTED_C_COMPILER_VERSION_MAJOR)
-    string(REGEX MATCH "^[0-9]+" dora_c_compiler_version_major "${CMAKE_C_COMPILER_VERSION}")
-    if(NOT "${dora_c_compiler_version_major}" STREQUAL "${DORA_EXPECTED_C_COMPILER_VERSION_MAJOR}")
-        message(FATAL_ERROR
-            "Expected C compiler major version ${DORA_EXPECTED_C_COMPILER_VERSION_MAJOR}, detected ${CMAKE_C_COMPILER_VERSION}. "
-            "Select the required C compiler in a fresh build directory.")
-    endif()
-endif()
-
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -52,9 +43,14 @@ set(CMAKE_C_EXTENSIONS OFF)
 #---------------------------------------
 
 option(DORA_BUILD_EXAMPLES "Build the examples" OFF)
+option(DORA_BUILD_BENCHMARKS "Build the benchmarks" OFF)
+
+if(PROJECT_IS_TOP_LEVEL AND DORA_BUILD_BENCHMARKS)
+    include(CTest)
+endif()
 
 set(dora_developer_build OFF)
-if(DORA_BUILD_EXAMPLES)
+if(PROJECT_IS_TOP_LEVEL OR DORA_BUILD_EXAMPLES OR DORA_BUILD_BENCHMARKS)
     set(dora_developer_build ON)
 endif()
 
@@ -65,7 +61,14 @@ endif()
 set(CACHE{DORA_KERNEL_BACKEND} TYPE STRING
     HELP "Select the kernel backend"
     VALUE cpu)
+set_property(CACHE DORA_KERNEL_BACKEND PROPERTY STRINGS cpu)
 option(DORA_KERNEL_USE_NEON "Enable NEON kernel implementations" ON)
+
+#---------------------------------------
+# Installation
+#---------------------------------------
+
+option(DORA_INSTALL "Generate the install rules" "${PROJECT_IS_TOP_LEVEL}")
 
 #-------------------------------------------------------------------------------
 #
@@ -89,12 +92,22 @@ elseif(dora_developer_build)
 endif()
 
 #---------------------------------------
+# Floating-point semantics
+#---------------------------------------
+
+if(CMAKE_C_COMPILER_ID MATCHES "^(Clang|AppleClang|GNU)$")
+    add_compile_options(-ffp-contract=off)
+else()
+    message(FATAL_ERROR "No floating-point contraction policy for ${CMAKE_C_COMPILER_ID}")
+endif()
+
+#---------------------------------------
 # Static analysis
 #---------------------------------------
 
 if(dora_developer_build)
     if(NOT CMAKE_GENERATOR MATCHES "Ninja|Makefiles")
-        message(FATAL_ERROR "Dora developer targets require a Ninja or Makefile generator for clang-tidy")
+        message(FATAL_ERROR "Top-level Dora builds, examples and benchmarks require a Ninja or Makefile generator for clang-tidy")
     endif()
     if(NOT DEFINED CMAKE_C_CLANG_TIDY)
         cmake_path(GET CMAKE_C_COMPILER PARENT_PATH dora_c_compiler_directory)
@@ -113,7 +126,7 @@ if(dora_developer_build)
 endif()
 
 if(dora_developer_build AND NOT CMAKE_C_CLANG_TIDY)
-    message(FATAL_ERROR "Dora examples require native clang-tidy integration")
+    message(FATAL_ERROR "Top-level Dora builds, examples and benchmarks require native clang-tidy integration")
 endif()
 
 #-------------------------------------------------------------------------------
@@ -368,13 +381,6 @@ endforeach()
 target_link_libraries(dora_vector PRIVATE m)
 
 #---------------------------------------
-# Source-specific options
-#---------------------------------------
-
-set_source_files_properties(src/kernel/cpu/arithmetic.c
-    PROPERTIES COMPILE_OPTIONS "$<$<C_COMPILER_ID:Clang,AppleClang,GNU>:-ffp-contract=off>")
-
-#---------------------------------------
 # Header verification
 #---------------------------------------
 
@@ -392,7 +398,7 @@ endif()
 #
 #-------------------------------------------------------------------------------
 
-if(PROJECT_IS_TOP_LEVEL)
+if(DORA_INSTALL)
     include(GNUInstallDirs)
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(
@@ -423,8 +429,20 @@ endif()
 #
 #-------------------------------------------------------------------------------
 
+function(dora_quote_string variable value)
+    string(REPLACE "\\" "\\\\" value "${value}")
+    string(REPLACE "\"" "\\\"" value "${value}")
+    string(REPLACE "\n" "\\n" value "${value}")
+    string(REPLACE "\r" "\\r" value "${value}")
+    string(REPLACE "\t" "\\t" value "${value}")
+    set(${variable} "\"${value}\"" PARENT_SCOPE)
+endfunction()
+
 if(DORA_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+if(DORA_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -434,17 +452,10 @@ endif()
 #-------------------------------------------------------------------------------
 
 #---------------------------------------
-# Build metadata and clangd
+# clangd
 #---------------------------------------
 
-if(PROJECT_IS_TOP_LEVEL)
-    cmake_file_api(
-        QUERY
-        API_VERSION 1
-        CODEMODEL 2
-        CACHE 2
-        TOOLCHAINS 1)
-
+if(PROJECT_IS_TOP_LEVEL AND CMAKE_EXPORT_COMPILE_COMMANDS)
     set(dora_clangd_binary_directory "${PROJECT_BINARY_DIR}")
     set(dora_clangd_public_flags "-I${dora_private_include_directory}")
     foreach(definition IN LISTS dora_private_definition_names)
@@ -453,40 +464,14 @@ if(PROJECT_IS_TOP_LEVEL)
     foreach(variable IN ITEMS dora_clangd_binary_directory dora_translation_unit_warnings dora_clangd_public_flags)
         set(escaped_values)
         foreach(value IN LISTS ${variable})
-            string(REPLACE "\\" "\\\\" value "${value}")
-            string(REPLACE "\"" "\\\"" value "${value}")
-            string(REPLACE "\n" "\\n" value "${value}")
-            string(REPLACE "\r" "\\r" value "${value}")
-            string(REPLACE "\t" "\\t" value "${value}")
-            list(APPEND escaped_values "\"${value}\"")
+            dora_quote_string(quoted_value "${value}")
+            list(APPEND escaped_values "${quoted_value}")
         endforeach()
         list(JOIN escaped_values ", " ${variable}_yaml)
     endforeach()
-    file(CONFIGURE OUTPUT "${PROJECT_BINARY_DIR}/dora-clangd.yaml" CONTENT [=[
-CompileFlags:
-  CompilationDatabase: @dora_clangd_binary_directory_yaml@
----
-If:
-  PathMatch: '.*\.h'
-CompileFlags:
-  Remove: [@dora_translation_unit_warnings_yaml@]
----
-If:
-  PathMatch: 'include/.*\.h'
-CompileFlags:
-  Remove: [@dora_clangd_public_flags_yaml@]
-]=] @ONLY)
-    file(CONFIGURE OUTPUT "${PROJECT_BINARY_DIR}/dora-clangd-select.cmake" CONTENT [=[
-if(NOT "@CMAKE_EXPORT_COMPILE_COMMANDS@" OR NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/compile_commands.json")
-    message(FATAL_ERROR "dora_clangd_select requires compile_commands.json; configure with CMAKE_EXPORT_COMPILE_COMMANDS=ON")
-endif()
-execute_process(
-    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
-        "${CMAKE_CURRENT_LIST_DIR}/dora-clangd.yaml" "${DORA_CLANGD_SOURCE_DIR}/.clangd"
-    COMMAND_ERROR_IS_FATAL ANY)
-]=] @ONLY)
+    configure_file(cmake/dora-clangd.yaml.in "${PROJECT_BINARY_DIR}/dora-clangd.yaml" @ONLY)
     add_custom_target(dora_clangd_select
-        COMMAND "${CMAKE_COMMAND}" "-DDORA_CLANGD_SOURCE_DIR=${PROJECT_SOURCE_DIR}"
-            -P "${PROJECT_BINARY_DIR}/dora-clangd-select.cmake"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${PROJECT_BINARY_DIR}/dora-clangd.yaml" "${PROJECT_SOURCE_DIR}/.clangd"
         VERBATIM)
 endif()
